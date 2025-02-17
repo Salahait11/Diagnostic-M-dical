@@ -181,6 +181,9 @@
                             <button id="download-report-button" class="btn btn-secondary" disabled>
                                 <i class="fas fa-download"></i> Télécharger le rapport
                             </button>
+                            <button id="retry-button" class="btn btn-primary">
+                                <i class="fas fa-redo"></i> Réessayer
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -241,6 +244,7 @@
             const medicalHistoryTextarea = document.getElementById("medical-history");
             const lifestyleTextarea = document.getElementById("lifestyle");
             const downloadReportButton = document.getElementById("download-report-button");
+            const retryButton = document.getElementById("retry-button");
 
             // Suggestions de symptômes (à remplacer par une liste plus complète)
             const symptomSuggestions = [
@@ -308,7 +312,16 @@
             // Partie ChatGPT (Gemini API)
             analyzeButton.addEventListener("click", async function (event) {
                 event.preventDefault();
+                analyzeSymptoms();
+            });
 
+            retryButton.addEventListener("click", function (event) {
+                event.preventDefault();
+                analyzeSymptoms();
+            });
+
+
+            async function analyzeSymptoms() {
                 // Valider la dernière étape avant l'analyse
                 let currentStep = $(this).closest(".step").data("step");
                 if (!validateStep(currentStep)) {
@@ -321,7 +334,7 @@
                 const medicalHistory = medicalHistoryTextarea.value;
                 const lifestyle = lifestyleTextarea.value;
 
-                const apiKey = "AIzaSyAWwgCoPUmrpVTtKD-zMJA2ShnFmqVRJEs"; // Replace with your API key!
+                const apiKey = "YOUR_API_KEY"; // Replace with your API key!
 
                 const prompt = `Vous êtes un assistant médical virtuel. Un utilisateur va vous décrire ses symptômes, son âge, son sexe, ses antécédents médicaux et son style de vie. Votre rôle est de fournir une analyse préliminaire à titre informatif uniquement. Vous ne devez en aucun cas donner de conseils médicaux définitifs, prescrire des médicaments ou recommander des traitements spécifiques.
 
@@ -441,7 +454,7 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
                     errorMessage.style.display = "block";
                     downloadReportButton.disabled = true; // Disable on error
                 }
-            });
+            }
 
             function populateList(listElement, data) {
                 listElement.innerHTML = "";  // Clear existing items
