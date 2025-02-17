@@ -559,30 +559,15 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
 
                 pdf.setFontSize(12);
                 let y = margin + 60;
-
-                // Wrap the text
-                let wrappedSymptoms = pdf.splitTextToSize(`Symptômes: ${symptoms}`, pageWidth - 2 * margin);
-                wrappedSymptoms.forEach(line => {
-                    pdf.text(line, margin, y);
-                    y += 10;
-                });
-
+                pdf.text(`Symptômes: ${symptoms}`, margin, y);
+                y += 10;
                 pdf.text(`Âge: ${age}`, margin, y);
                 y += 10;
                 pdf.text(`Sexe: ${gender}`, margin, y);
                 y += 10;
-
-                let wrappedMedicalHistory = pdf.splitTextToSize(`Antécédents médicaux: ${medicalHistory}`, pageWidth - 2 * margin);
-                wrappedMedicalHistory.forEach(line => {
-                    pdf.text(line, margin, y);
-                    y += 10;
-                });
-
-                let wrappedLifestyle = pdf.splitTextToSize(`Habitudes de vie: ${lifestyle}`, pageWidth - 2 * margin);
-                wrappedLifestyle.forEach(line => {
-                    pdf.text(line, margin, y);
-                    y += 10;
-                });
+                pdf.text(`Antécédents médicaux: ${medicalHistory}`, margin, y);
+                y += 10;
+                pdf.text(`Habitudes de vie: ${lifestyle}`, margin, y);
 
                 // Add a function to add content with page break
                 function addContentWithPageBreak(doc, contentTitle, contentList, startY, pageNumber) {
@@ -595,19 +580,16 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
 
                     doc.setFontSize(12);
                     for (const item of contentList) {
-                        let wrappedText = doc.splitTextToSize(`- ${item}`, pageWidth - 2 * margin); // Wrap the text
-                        for (const line of wrappedText) {
-                            y += lineHeight;
-                            if (y > pageHeight - margin - 20) { // Check if content exceeds page height
-                                doc.addPage(); // Add new page
-                                addHeader(doc);
-                                addFooter(doc, pageNumber + 1); // Correctly increment page number
-                                y = margin + 30; // Reset Y position for the new page
-                                pageNumber++;
-                            }
-                            doc.text(line, margin, y);
-                        }
+                        y += lineHeight;
+                        if (y > pageHeight - margin - 20) { // Check if content exceeds page height
+                            doc.addPage(); // Add new page
+                            addHeader(doc);
+                            addFooter(doc, pageNumber + 1); // Correctly increment page number
+                            y = margin + 30; // Reset Y position for the new page
+                            pageNumber++;
 
+                        }
+                        doc.text(`- ${item}`, margin, y);
                     }
                     return { y: y, pageNumber: pageNumber };
                 }
@@ -630,22 +612,14 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
                     addFooter(pdf, recommendationsResult.pageNumber + 1);
                     recommendationsResult.y = margin + 30;
                 }
-
-                let wrappedDisclaimer = pdf.splitTextToSize("Avertissement: Cette analyse est à titre informatif seulement et ne remplace pas un avis médical professionnel.",
-                    pageWidth - 2 * margin);
-
-                wrappedDisclaimer.forEach(line => {
-                    pdf.text(line, margin, recommendationsResult.y);
-                    recommendationsResult.y += 10;
-
-                    if (recommendationsResult.y > pageHeight - margin - 20) {
-                        pdf.addPage();
-                        addHeader(pdf);
-                        addFooter(pdf, recommendationsResult.pageNumber + 1);
-                        recommendationsResult.y = margin + 30;
+                pdf.text(
+                    "Avertissement: Cette analyse est à titre informatif seulement et ne remplace pas un avis médical professionnel.",
+                    margin,
+                    recommendationsResult.y,
+                    {
+                        maxWidth: 180,
                     }
-                });
-
+                );
 
                 // Télécharger le PDF
                 pdf.save("rapport_medical.pdf");
