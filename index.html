@@ -178,7 +178,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                            <button id="download-report-button" class="btn btn-secondary">
+                            <button id="download-report-button" class="btn btn-secondary" disabled>
                                 <i class="fas fa-download"></i> Télécharger le rapport
                             </button>
                         </div>
@@ -189,7 +189,7 @@
     </div>
 
     <footer class="text-center mt-5 py-3 bg-light">
-        <p>© 2025 Diagnostic Médical. Tous droits réservés. Développé par Salah Ait Hammou.</p>
+        <p>© 2023 Diagnostic Médical. Tous droits réservés. Développé par Salah Ait Hammou.</p>
     </footer>
 
     <!-- jQuery -->
@@ -552,6 +552,10 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
                 function addContentWithPageBreak(doc, contentTitle, contentList, startY, pageNumber) {
                     let y = startY;
                     const lineHeight = 10; // Adjust line height as needed
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const margin = 20;
+                    const availableWidth = pageWidth - 2 * margin;
+                    const pageHeight = doc.internal.pageSize.getHeight();
 
                     doc.setFontSize(16);
                     y += 20;
@@ -559,16 +563,19 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
 
                     doc.setFontSize(12);
                     for (const item of contentList) {
-                        y += lineHeight;
-                        if (y > pageHeight - margin - 20) { // Check if content exceeds page height
-                            doc.addPage(); // Add new page
-                            addHeader(doc);
-                            addFooter(doc, pageNumber + 1); // Correctly increment page number
-                            y = margin + 30; // Reset Y position for the new page
-                            pageNumber++;
+                        const textLines = doc.splitTextToSize(`- ${item}`, availableWidth);  // Split each item
 
+                        for (const line of textLines) {
+                            y += lineHeight;
+                            if (y > pageHeight - margin - 20) {
+                                doc.addPage();
+                                addHeader(doc);
+                                addFooter(doc, pageNumber + 1);
+                                y = margin + 30;
+                                pageNumber++;
+                            }
+                            doc.text(line, margin, y);
                         }
-                        doc.text(`- ${item}`, margin, y);
                     }
                     return { y: y, pageNumber: pageNumber };
                 }
