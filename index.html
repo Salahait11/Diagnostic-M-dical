@@ -178,9 +178,6 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                            <button id="download-report-button" class="btn btn-secondary">
-                                <i class="fas fa-download"></i> Télécharger le rapport
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -196,8 +193,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Easy Autocomplete JS -->
     <script src="https://cdn.jsdelivr.net/npm/easy-autocomplete@1.3.5/dist/jquery.easy-autocomplete.min.js"></script>
-    <!-- jsPDF library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <!-- Bootstrap JS (Popper.js is a dependency) -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
@@ -240,9 +235,6 @@
             const genderSelect = document.getElementById("gender");
             const medicalHistoryTextarea = document.getElementById("medical-history");
             const lifestyleTextarea = document.getElementById("lifestyle");
-            const downloadReportButton = document.getElementById(
-                "download-report-button"
-            );
             const loadingIndicator = document.getElementById("loading-indicator");
 
             // Suggestions de symptômes (à remplacer par une liste plus complète)
@@ -325,8 +317,19 @@
                 const medicalHistory = medicalHistoryTextarea.value;
                 const lifestyle = lifestyleTextarea.value;
 
-                // // Show the loading indicator  SUPPRIMÉ
-                // loadingIndicator.style.display = "flex";
+                // Format the prompt correctly.
+                const prompt = `Vous êtes un assistant médical virtuel. Un utilisateur va vous décrire ses symptômes, son âge, son sexe, ses antécédents médicaux et son style de vie. Votre rôle est de fournir une analyse préliminaire à titre informatif uniquement. Vous ne devez en aucun cas donner de conseils médicaux définitifs, prescrire des médicaments ou recommander des traitements spécifiques.
+
+L'utilisateur a ${age} ans et est de sexe ${gender}. Ses antécédents médicaux sont : ${medicalHistory}. Son style de vie est : ${lifestyle}. Il décrit les symptômes suivants : ${symptoms}.
+
+Fournissez les informations suivantes sous forme de listes NON NUMÉROTÉES claires, concises et réalistes :
+
+Diagnostics différentiels possibles : (liste concise et réaliste, maximum 3, chaque élément précédé d'un tiret "-". Soyez prudent et évitez de suggérer des diagnostics rares ou graves sans justifications solides.)
+Questions supplémentaires pour affiner le diagnostic : (3 questions maximum, pertinentes, spécifiques et faciles à comprendre par un non-professionnel, chaque élément précédé d'un tiret "-")
+Causes possibles des symptômes : (liste concise, chaque élément précédé d'un tiret "-". Donnez la préférence aux causes courantes et pertinentes.)
+Recommandations générales : (3 recommandations maximum, axées sur des conseils de bon sens et des mesures préventives, telles que "Consultez un médecin généraliste pour un examen plus approfondi", "Reposez-vous et hydratez-vous bien", "Surveillez l'évolution des symptômes", chaque élément précédé d'un tiret "-")`;
+
+
                 diagnosisDiv.style.display = "none";
                 errorMessage.style.display = "none";
                 possibleDiagnosesList.innerHTML = "";
@@ -339,41 +342,28 @@
                 myModal.show();
 
 
-                const openRouterApiKey = "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"; // Remplace par ta clé OpenRouter API
-                const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
-
-                const prompt = `Vous êtes un assistant médical virtuel expérimenté. Un utilisateur va vous décrire ses symptômes, son âge, son sexe, ses antécédents médicaux et son style de vie. Votre rôle est de fournir une analyse préliminaire à titre informatif uniquement. Vous ne devez en aucun cas donner de conseils médicaux définitifs, prescrire des médicaments ou recommander des traitements spécifiques.
-
-L’utilisateur a ${age} ans et est de sexe ${gender}. Ses antécédents médicaux sont : ${medicalHistory}. Son style de vie est : ${lifestyle}. Il décrit les symptômes suivants : ${symptoms}.
-
-Fournissez les informations suivantes sous forme de listes NON NUMÉROTÉES claires, concises et réalistes :
-
-Diagnostics différentiels possibles : (liste concise et réaliste, maximum 3, chaque élément précédé d’un tiret “-”. Soyez prudent et évitez de suggérer des diagnostics rares ou graves sans justifications solides.)
-Questions supplémentaires pour affiner le diagnostic : (3 questions maximum, pertinentes, spécifiques et faciles à comprendre par un non-professionnel, chaque élément précédé d’un tiret “-”)
-Causes possibles des symptômes : (liste concise, chaque élément précédé d’un tiret “-”. Privilégiez les causes courantes et pertinentes.)
-Recommandations générales : (3 recommandations maximum, axées sur des conseils de bon sens et des mesures préventives, telles que “Consultez un médecin généraliste pour un examen plus approfondi”, “Reposez-vous et hydratez-vous bien”, “Surveillez l’évolution des symptômes”, chaque élément précédé d’un tiret “-”)`;
-
                 try {
-                    const response = await fetch(openRouterUrl, {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${openRouterApiKey}`,
+                            "Authorization": "Bearer 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", // Replace with your key
+                            "HTTP-Referer": "http://localhost", // Replace with your site URL. Only required in production environment.
+                            "X-Title": "Medical Diagnostic App", // Replace with your site name
+                            "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            model: "google/gemini-2.0-pro-exp-02-05:free", // Specify the model you want to use
-                            messages: [
+                            "model": "google/gemini-2.0-pro-exp-02-05:free",
+                            "messages": [
                                 {
-                                    role: "user",
-                                    content: prompt,
-                                },
-                            ],
-                            max_tokens: 700, // Adjust as needed
-                        }),
+                                    "role": "user",
+                                    "content": prompt  //Use the prompt from your function call.
+                                }
+                            ]
+                        })
                     });
 
                     if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
 
                     const data = await response.json();
@@ -472,157 +462,11 @@ Recommandations générales : (3 recommandations maximum, axées sur des conseil
                     // loadingIndicator.style.display = "none";
                     diagnosisDiv.style.display = "block";
 
-
                 } catch (error) {
-                    console.error("Erreur lors de l'appel à OpenRouter:", error);
+                    console.error("Error calling OpenRouter API:", error);
                     errorMessage.textContent = `Une erreur s'est produite : ${error.message}. Veuillez réessayer plus tard.`;
                     errorMessage.style.display = "block";
-                    // loadingIndicator.style.display = "none"; SUPPRIMÉ
                 }
-            });
-
-            // Téléchargement du rapport
-            downloadReportButton.addEventListener("click", function () {
-                // Récupérer les données du formulaire et les résultats de l'analyse
-                const symptoms = symptomsInput.value;
-                const age = ageInput.value;
-                const gender = genderSelect.value;
-                const medicalHistory = medicalHistoryTextarea.value;
-                const lifestyle = lifestyleTextarea.value;
-
-
-                let diagnoses = [];
-                document.querySelectorAll("#possible-diagnoses-list li").forEach((li) => {
-                    diagnoses.push(li.textContent);
-                });
-
-                let questions = [];
-                document.querySelectorAll("#additional-questions-list li").forEach((li) => {
-                    questions.push(li.textContent);
-                });
-
-                let causes = [];
-                document.querySelectorAll("#possible-causes-list li").forEach((li) => {
-                    causes.push(li.textContent);
-                });
-
-                let recommendations = [];
-                document.querySelectorAll("#recommendations-list li").forEach((li) => {
-                    recommendations.push(li.textContent);
-                });
-
-
-                // Créer un nouveau document jsPDF
-                const pdf = new jspdf.jsPDF();
-
-                // Set margins and page size
-                const margin = 20;
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-
-                // Function to add header
-                function addHeader(doc) {
-                    doc.setFontSize(12);
-                    doc.setTextColor(40, 40, 40);
-                    doc.text("Nom de l'Hopital / Cabinet Médical", margin, margin);
-                    doc.text("Adresse, Numéro de téléphone", margin, margin + 10);
-                    // Add a line below the header
-                    doc.setLineWidth(0.5);
-                    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
-                }
-
-                // Function to add footer with page number and developer info
-                function addFooter(doc, pageNumber) {
-                    doc.setFontSize(10);
-                    doc.setTextColor(100, 100, 100);
-                    const footerText = `Développé par Salah Ait Hammou - Page ${pageNumber}`;
-                    const textWidth = doc.getTextWidth(footerText);
-                    const x = (pageWidth - textWidth) / 2; // Center the footer text
-                    doc.text(footerText, x, pageHeight - margin);
-                }
-
-                // Add Header to the first page
-                addHeader(pdf);
-                addFooter(pdf, 1); // Add footer to the first page
-
-                // Ajouter un titre au rapport
-                pdf.setFontSize(24);
-                pdf.setTextColor(40, 40, 40); // Couleur du texte
-                const titleText = "Rapport de Diagnostic Médical";
-                const titleWidth = pdf.getTextWidth(titleText);
-                const titleX = (pageWidth - titleWidth) / 2; // Center the title
-                pdf.text(titleText, titleX, margin + 30);
-
-                // Ajouter les informations du patient
-                pdf.setFontSize(16);
-                pdf.text("Informations du patient:", margin, margin + 50);
-
-                pdf.setFontSize(12);
-                let y = margin + 60;
-                pdf.text(`Symptômes: ${symptoms}`, margin, y);
-                y += 10;
-                pdf.text(`Âge: ${age}`, margin, y);
-                y += 10;
-                pdf.text(`Sexe: ${gender}`, margin, y);
-                y += 10;
-                pdf.text(`Antécédents médicaux: ${medicalHistory}`, margin, y);
-                y += 10;
-                pdf.text(`Habitudes de vie: ${lifestyle}`, margin, y);
-
-                // Add a function to add content with page break
-                function addContentWithPageBreak(doc, contentTitle, contentList, startY, pageNumber) {
-                    let y = startY;
-                    const lineHeight = 10; // Adjust line height as needed
-
-                    doc.setFontSize(16);
-                    y += 20;
-                    doc.text(contentTitle, margin, y);
-
-                    doc.setFontSize(12);
-                    for (const item of contentList) {
-                        y += lineHeight;
-                        if (y > pageHeight - margin - 20) { // Check if content exceeds page height
-                            doc.addPage(); // Add new page
-                            addHeader(doc);
-                            addFooter(doc, pageNumber + 1); // Correctly increment page number
-                            y = margin + 30; // Reset Y position for the new page
-                            pageNumber++;
-
-                        }
-                        doc.text(`- ${item}`, margin, y);
-                    }
-                    return { y: y, pageNumber: pageNumber };
-                }
-
-
-                // Add contents using the function
-                let diagnosesResult = addContentWithPageBreak(pdf, "Diagnostics différentiels possibles:", diagnoses, y, 1);
-                let questionsResult = addContentWithPageBreak(pdf, "Questions supplémentaires pour affiner le diagnostic:", questions, diagnosesResult.y, diagnosesResult.pageNumber);
-                let causesResult = addContentWithPageBreak(pdf, "Causes possibles des symptômes:", causes, questionsResult.y, questionsResult.pageNumber);
-                let recommendationsResult = addContentWithPageBreak(pdf, "Recommandations générales:", recommendations, causesResult.y, causesResult.pageNumber);
-
-
-                // Ajouter un avertissement
-                pdf.setFontSize(10);
-                pdf.setTextColor(100, 100, 100);
-                recommendationsResult.y += 20;
-                if (recommendationsResult.y > pageHeight - margin - 20) {
-                    pdf.addPage();
-                    addHeader(pdf);
-                    addFooter(pdf, recommendationsResult.pageNumber + 1);
-                    recommendationsResult.y = margin + 30;
-                }
-                pdf.text(
-                    "Avertissement: Cette analyse est à titre informatif seulement et ne remplace pas un avis médical professionnel.",
-                    margin,
-                    recommendationsResult.y,
-                    {
-                        maxWidth: 180,
-                    }
-                );
-
-                // Télécharger le PDF
-                pdf.save("rapport_medical.pdf");
             });
         });
     </script>
