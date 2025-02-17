@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Médical</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Easy Autocomplete CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easy-autocomplete@1.3.5/dist/easy-autocomplete.min.css">
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ajout de styles personnalisés pour une meilleure apparence */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary,
+        .btn-success {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover,
+        .btn-success:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        #diagnosisModal .modal-content {
+            border-radius: 10px;
+        }
+
+        #diagnosisModal .modal-header {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        #diagnosisModal .modal-footer {
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="text-center py-4 bg-light">
+        <h1>Diagnostic Médical</h1>
+        <p class="lead">Obtenez une analyse préliminaire de vos symptômes en quelques étapes.</p>
+    </header>
+
+    <div class="container mt-4">
+        <!-- Alerte d'avertissement -->
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> Important : Cette application ne remplace pas un avis médical
+            professionnel. Consultez toujours un médecin pour un diagnostic précis.
+        </div>
+
+        <!-- Formulaire en étapes (Affichage conditionnel) -->
+        <div id="symptom-form">
+            <!-- Étape 1 : Symptômes -->
+            <div class="step" data-step="1">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Étape 1 : Symptômes</h5>
+                        <div class="mb-3">
+                            <label for="symptoms" class="form-label">Décrivez vos symptômes :</label>
+                            <input type="text" id="symptoms" class="form-control" required
+                                placeholder="ex: Maux de tête, fièvre, toux" />
+                            <div class="invalid-feedback">Veuillez entrer vos symptômes.</div>
+                            <small class="form-text text-muted">Soyez le plus précis possible.</small>
+                        </div>
+                        <button class="btn btn-primary next-step" data-step="2">Suivant <i
+                                class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Étape 2 : Informations personnelles -->
+            <div class="step" data-step="2" style="display: none;">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Étape 2 : Informations personnelles</h5>
+                        <div class="mb-3">
+                            <label for="age" class="form-label">Âge :</label>
+                            <input type="number" id="age" class="form-control" required>
+                            <div class="invalid-feedback">Veuillez entrer votre âge.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gender" class="form-label">Sexe :</label>
+                            <select id="gender" class="form-select" required>
+                                <option value="">Sélectionner</option>
+                                <option value="male">Homme</option>
+                                <option value="female">Femme</option>
+                                <option value="other">Autre</option>
+                            </select>
+                            <div class="invalid-feedback">Veuillez sélectionner votre sexe.</div>
+                        </div>
+                        <button class="btn btn-secondary prev-step" data-step="1"><i
+                                class="fas fa-arrow-left"></i> Précédent</button>
+                        <button class="btn btn-primary next-step" data-step="3">Suivant <i
+                                class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Étape 3 : Antécédents médicaux -->
+            <div class="step" data-step="3" style="display: none;">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Étape 3 : Antécédents médicaux</h5>
+                        <div class="mb-3">
+                            <label for="medical-history" class="form-label">Antécédents médicaux :</label>
+                            <textarea id="medical-history" class="form-control" rows="3"
+                                placeholder="ex: Allergies, maladies chroniques"></textarea>
+                            <small class="form-text text-muted">Décrivez tout problème de santé pertinent.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lifestyle" class="form-label">Habitudes de vie (tabagisme, alcool, activité
+                                physique) :</label>
+                            <textarea id="lifestyle" class="form-control" rows="2"
+                                placeholder="ex: Fumeur occasionnel, consommation modérée d'alcool, activité physique régulière"></textarea>
+                            <small class="form-text text-muted">Fournissez des informations sur votre style de
+                                vie.</small>
+                        </div>
+                        <button class="btn btn-secondary prev-step" data-step="2"><i
+                                class="fas fa-arrow-left"></i> Précédent</button>
+                        <button id="analyze-button" class="btn btn-success"><i class="fas fa-search"></i> Analyser
+                            les symptômes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résultats du diagnostic -->
+        <div id="diagnosis-results" class="mt-4">
+            <!-- Modal -->
+            <div class="modal fade" id="diagnosisModal" tabindex="-1" aria-labelledby="diagnosisModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="diagnosisModalLabel">Résultats de l'analyse</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+
+                            <div id="diagnosis" style="display: none;">
+                                <h3>Diagnostics différentiels possibles :</h3>
+                                <ul id="possible-diagnoses-list" class="list-group"></ul>
+
+                                <h3>Questions supplémentaires pour affiner le diagnostic :</h3>
+                                <ul id="additional-questions-list" class="list-group"></ul>
+
+                                <h3>Causes possibles des symptômes :</h3>
+                                <ul id="possible-causes-list" class="list-group"></ul>
+
+                                <h3>Recommandations :</h3>
+                                <ul id="recommendations-list" class="list-group"></ul>
+
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle"></i> Cette analyse est à titre informatif seulement et ne
+                                    remplace pas un avis médical professionnel.
+                                </div>
+                            </div>
+                            <p id="error-message" class="alert alert-danger" style="display: none"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <button id="download-report-button" class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Télécharger le rapport
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-5 py-3 bg-light">
+        <p>© 2023 Diagnostic Médical. Tous droits réservés. Développé par Salah Ait Hammou.</p>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Easy Autocomplete JS -->
+    <script src="https://cdn.jsdelivr.net/npm/easy-autocomplete@1.3.5/dist/jquery.easy-autocomplete.min.js"></script>
+    <!-- jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Bootstrap JS (Popper.js is a dependency) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <!-- Votre script JavaScript -->
+    <script>
+        $(document).ready(function () {
+            const symptomForm = $("#symptom-form");
+            const steps = $(".step");
+
+            // Afficher la première étape au chargement
+            steps.filter("[data-step='1']").show();
+
+            // Gestion des boutons "Suivant" et "Précédent"
+            symptomForm.on("click", ".next-step, .prev-step", function () {
+                const currentStep = $(this).closest(".step").data("step");
+                const nextStep = $(this).data("step");
+
+                // Validation (vous pouvez ajouter une validation ici si nécessaire)
+                // Pour l'instant, on passe directement à l'étape suivante/précédente
+
+                steps.hide(); // Masquer toutes les étapes
+                steps.filter("[data-step='" + nextStep + "']").show(); // Afficher l'étape suivante
+            });
+
+            const diagnosisResults = document.getElementById("diagnosis-results");
+            const diagnosisDiv = document.getElementById("diagnosis");
+            const possibleDiagnosesList = document.getElementById(
+                "possible-diagnoses-list"
+            );
+            const additionalQuestionsList = document.getElementById(
+                "additional-questions-list"
+            );
+            const possibleCausesList = document.getElementById("possible-causes-list");
+            const recommendationsList = document.getElementById("recommendations-list");
+            const errorMessage = document.getElementById("error-message");
+            const analyzeButton = document.getElementById("analyze-button");
+            const symptomsInput = document.getElementById("symptoms");
+            const ageInput = document.getElementById("age");
+            const genderSelect = document.getElementById("gender");
+            const medicalHistoryTextarea = document.getElementById("medical-history");
+            const lifestyleTextarea = document.getElementById("lifestyle");
+            const downloadReportButton = document.getElementById(
+                "download-report-button"
+            );
+            const loadingIndicator = document.getElementById("loading-indicator");
+
+            // Suggestions de symptômes (à remplacer par une liste plus complète)
+            const symptomSuggestions = [
+                "Maux de tête",
+                "Fièvre",
+                "Toux",
+                "Fatigue",
+                "Douleurs musculaires",
+                "Essoufflement",
+                "Nausées",
+                "Diarrhée",
+                "Éruption cutanée",
+                "Vertiges",
+            ];
+
+            // Initialisation de Easy Autocomplete
+            const options = {
+                data: symptomSuggestions,
+                placeholder: "ex: Maux de tête, fièvre, toux",
+                getValue: function (item) {
+                    return item;
+                },
+                list: {
+                    match: {
+                        enabled: true,
+                    },
+                    onSelectItemEvent: function () {
+                        symptomsInput.value = $("#symptoms").getSelectedItemData();
+                    },
+                },
+            };
+
+            $("#symptoms").easyAutocomplete(options);
+
+            // Validation du formulaire pour chaque étape
+            function validateStep(step) {
+                let isValid = true;
+
+                // Reset des états de validation
+                symptomsInput.classList.remove("is-invalid");
+                ageInput.classList.remove("is-invalid");
+                genderSelect.classList.remove("is-invalid");
+
+                if (step === 1) {
+                    // Étape 1: Symptômes
+                    if (symptomsInput.value.trim() === "") {
+                        symptomsInput.classList.add("is-invalid");
+                        isValid = false;
+                    }
+                } else if (step === 2) {
+                    // Étape 2: Informations personnelles
+                    if (ageInput.value.trim() === "") {
+                        ageInput.classList.add("is-invalid");
+                        isValid = false;
+                    }
+                    if (genderSelect.value === "") {
+                        genderSelect.classList.add("is-invalid");
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+
+            // Partie ChatGPT (OpenRouter)
+            analyzeButton.addEventListener("click", async function (event) {
+                event.preventDefault();
+
+                // Valider la dernière étape avant l'analyse
+                let currentStep = $(this).closest(".step").data("step"); // get current step from clicked button
+                if (!validateStep(currentStep)) {
+                    return;
+                }
+
+                const symptoms = symptomsInput.value;
+                const age = ageInput.value;
+                const gender = genderSelect.value;
+                const medicalHistory = medicalHistoryTextarea.value;
+                const lifestyle = lifestyleTextarea.value;
+
+                // // Show the loading indicator  SUPPRIMÉ
+                // loadingIndicator.style.display = "flex";
+                diagnosisDiv.style.display = "none";
+                errorMessage.style.display = "none";
+                possibleDiagnosesList.innerHTML = "";
+                additionalQuestionsList.innerHTML = "";
+                possibleCausesList.innerHTML = "";
+                recommendationsList.innerHTML = "";
+
+                // Open the modal
+                const myModal = new bootstrap.Modal(document.getElementById('diagnosisModal'));
+                myModal.show();
+
+
+                const openRouterApiKey = "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"; // Remplace par ta clé OpenRouter API
+                const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
+
+                const prompt = `Vous êtes un assistant médical virtuel expérimenté. Un utilisateur va vous décrire ses symptômes, son âge, son sexe, ses antécédents médicaux et son style de vie. Votre rôle est de fournir une analyse préliminaire à titre informatif uniquement. Vous ne devez en aucun cas donner de conseils médicaux définitifs, prescrire des médicaments ou recommander des traitements spécifiques.
+
+L’utilisateur a ${age} ans et est de sexe ${gender}. Ses antécédents médicaux sont : ${medicalHistory}. Son style de vie est : ${lifestyle}. Il décrit les symptômes suivants : ${symptoms}.
+
+Fournissez les informations suivantes sous forme de listes NON NUMÉROTÉES claires, concises et réalistes :
+
+Diagnostics différentiels possibles : (liste concise et réaliste, maximum 3, chaque élément précédé d’un tiret “-”. Soyez prudent et évitez de suggérer des diagnostics rares ou graves sans justifications solides.)
+Questions supplémentaires pour affiner le diagnostic : (3 questions maximum, pertinentes, spécifiques et faciles à comprendre par un non-professionnel, chaque élément précédé d’un tiret “-”)
+Causes possibles des symptômes : (liste concise, chaque élément précédé d’un tiret “-”. Privilégiez les causes courantes et pertinentes.)
+Recommandations générales : (3 recommandations maximum, axées sur des conseils de bon sens et des mesures préventives, telles que “Consultez un médecin généraliste pour un examen plus approfondi”, “Reposez-vous et hydratez-vous bien”, “Surveillez l’évolution des symptômes”, chaque élément précédé d’un tiret “-”)`;
+
+                try {
+                    const response = await fetch(openRouterUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${openRouterApiKey}`,
+                        },
+                        body: JSON.stringify({
+                            model: "google/gemini-2.0-pro-exp-02-05:free", // Specify the model you want to use
+                            messages: [
+                                {
+                                    role: "user",
+                                    content: prompt,
+                                },
+                            ],
+                            max_tokens: 700, // Adjust as needed
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Vérifie si data.choices existe et n'est pas vide
+                    if (!data || !data.choices || data.choices.length === 0) {
+                        throw new Error("Réponse de l'API invalide : structure 'choices' manquante ou vide.");
+                    }
+
+                    // Vérifie si data.choices[0].message existe
+                    if (!data.choices[0].message) {
+                        throw new Error("Réponse de l'API invalide : structure 'message' manquante.");
+                    }
+
+                    const chatGptResponse = data.choices[0].message.content;
+
+                    // Parser la réponse de ChatGPT (extraction des listes)
+                    const diagnosesRegex =
+                        /\*\*Diagnostics différentiels possibles :\*\*\s*([\s\S]*?)(?=\*\*|$)/;
+                    const questionsRegex =
+                        /\*\*Questions supplémentaires pour affiner le diagnostic :\*\*\s*([\s\S]*?)(?=\*\*|$)/;
+                    const causesRegex =
+                        /\*\*Causes possibles des symptômes :\*\*\s*([\s\S]*?)(?=\*\*|$)/;
+                    const recommendationsRegex =
+                        /\*\*Recommandations générales :\*\*\s*([\s\S]*?)(?=\*\*|$)/;
+
+                    const diagnosesMatch = chatGptResponse.match(diagnosesRegex);
+                    const questionsMatch = chatGptResponse.match(questionsRegex);
+                    const causesMatch = chatGptResponse.match(causesRegex);
+                    const recommendationsMatch = chatGptResponse.match(recommendationsRegex);
+
+                    const diagnoses = diagnosesMatch
+                        ? diagnosesMatch[1]
+                            .trim()
+                            .split("\n")
+                            .map((item) => item.replace(/^\s*-\s*/, "").trim()) //Supprimer les tirets
+                            .filter(item => item !== "") // Filtrer les chaines vides
+                        : [];
+                    const questions = questionsMatch
+                        ? questionsMatch[1]
+                            .trim()
+                            .split("\n")
+                            .map((item) => item.replace(/^\s*-\s*/, "").trim()) //Supprimer les tirets
+                            .filter(item => item !== "") // Filtrer les chaines vides
+                        : [];
+                    const causes = causesMatch
+                        ? causesMatch[1]
+                            .trim()
+                            .split("\n")
+                            .map((item) => item.replace(/^\s*-\s*/, "").trim()) //Supprimer les tirets
+                            .filter(item => item !== "") // Filtrer les chaines vides
+                        : [];
+                    const recommendations = recommendationsMatch
+                        ? recommendationsMatch[1]
+                            .trim()
+                            .split("\n")
+                            .map((item) => item.replace(/^\s*-\s*/, "").trim()) //Supprimer les tirets
+                            .filter(item => item !== "") // Filtrer les chaines vides
+                        : [];
+
+                    // Afficher les résultats dans des listes
+                    possibleDiagnosesList.innerHTML = ""; // Clear existing list items
+                    diagnoses.forEach((item) => {
+                        const li = document.createElement("li");
+                        li.classList.add("list-group-item");
+                        li.textContent = item.trim();
+                        possibleDiagnosesList.appendChild(li);
+                    });
+
+                    additionalQuestionsList.innerHTML = ""; // Clear existing list items
+                    questions.forEach((item) => {
+                        const li = document.createElement("li");
+                        li.classList.add("list-group-item");
+                        li.textContent = item.trim();
+                        additionalQuestionsList.appendChild(li);
+                    });
+
+                    possibleCausesList.innerHTML = ""; // Clear existing list items
+                    causes.forEach((item) => {
+                        const li = document.createElement("li");
+                        li.classList.add("list-group-item");
+                        li.textContent = item.trim();
+                        possibleCausesList.appendChild(li);
+                    });
+
+                    recommendationsList.innerHTML = ""; // Clear existing list items
+                    recommendations.forEach((item) => {
+                        const li = document.createElement("li");
+                        li.classList.add("list-group-item");
+                        li.textContent = item.trim();
+                        recommendationsList.appendChild(li);
+                    });
+
+
+                    // Hide the loading indicator and show the results SUPPRIMÉ
+                    // loadingIndicator.style.display = "none";
+                    diagnosisDiv.style.display = "block";
+
+
+                } catch (error) {
+                    console.error("Erreur lors de l'appel à OpenRouter:", error);
+                    errorMessage.textContent = `Une erreur s'est produite : ${error.message}. Veuillez réessayer plus tard.`;
+                    errorMessage.style.display = "block";
+                    // loadingIndicator.style.display = "none"; SUPPRIMÉ
+                }
+            });
+
+            // Téléchargement du rapport
+            downloadReportButton.addEventListener("click", function () {
+                // Récupérer les données du formulaire et les résultats de l'analyse
+                const symptoms = symptomsInput.value;
+                const age = ageInput.value;
+                const gender = genderSelect.value;
+                const medicalHistory = medicalHistoryTextarea.value;
+                const lifestyle = lifestyleTextarea.value;
+
+
+                let diagnoses = [];
+                document.querySelectorAll("#possible-diagnoses-list li").forEach((li) => {
+                    diagnoses.push(li.textContent);
+                });
+
+                let questions = [];
+                document.querySelectorAll("#additional-questions-list li").forEach((li) => {
+                    questions.push(li.textContent);
+                });
+
+                let causes = [];
+                document.querySelectorAll("#possible-causes-list li").forEach((li) => {
+                    causes.push(li.textContent);
+                });
+
+                let recommendations = [];
+                document.querySelectorAll("#recommendations-list li").forEach((li) => {
+                    recommendations.push(li.textContent);
+                });
+
+
+                // Créer un nouveau document jsPDF
+                const pdf = new jspdf.jsPDF();
+
+                // Set margins and page size
+                const margin = 20;
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                // Function to add header
+                function addHeader(doc) {
+                    doc.setFontSize(12);
+                    doc.setTextColor(40, 40, 40);
+                    doc.text("Nom de l'Hopital / Cabinet Médical", margin, margin);
+                    doc.text("Adresse, Numéro de téléphone", margin, margin + 10);
+                    // Add a line below the header
+                    doc.setLineWidth(0.5);
+                    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
+                }
+
+                // Function to add footer with page number and developer info
+                function addFooter(doc, pageNumber) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    const footerText = `Développé par Salah Ait Hammou - Page ${pageNumber}`;
+                    const textWidth = doc.getTextWidth(footerText);
+                    const x = (pageWidth - textWidth) / 2; // Center the footer text
+                    doc.text(footerText, x, pageHeight - margin);
+                }
+
+                // Add Header to the first page
+                addHeader(pdf);
+                addFooter(pdf, 1); // Add footer to the first page
+
+                // Ajouter un titre au rapport
+                pdf.setFontSize(24);
+                pdf.setTextColor(40, 40, 40); // Couleur du texte
+                const titleText = "Rapport de Diagnostic Médical";
+                const titleWidth = pdf.getTextWidth(titleText);
+                const titleX = (pageWidth - titleWidth) / 2; // Center the title
+                pdf.text(titleText, titleX, margin + 30);
+
+                // Ajouter les informations du patient
+                pdf.setFontSize(16);
+                pdf.text("Informations du patient:", margin, margin + 50);
+
+                pdf.setFontSize(12);
+                let y = margin + 60;
+                pdf.text(`Symptômes: ${symptoms}`, margin, y);
+                y += 10;
+                pdf.text(`Âge: ${age}`, margin, y);
+                y += 10;
+                pdf.text(`Sexe: ${gender}`, margin, y);
+                y += 10;
+                pdf.text(`Antécédents médicaux: ${medicalHistory}`, margin, y);
+                y += 10;
+                pdf.text(`Habitudes de vie: ${lifestyle}`, margin, y);
+
+                // Add a function to add content with page break
+                function addContentWithPageBreak(doc, contentTitle, contentList, startY, pageNumber) {
+                    let y = startY;
+                    const lineHeight = 10; // Adjust line height as needed
+
+                    doc.setFontSize(16);
+                    y += 20;
+                    doc.text(contentTitle, margin, y);
+
+                    doc.setFontSize(12);
+                    for (const item of contentList) {
+                        y += lineHeight;
+                        if (y > pageHeight - margin - 20) { // Check if content exceeds page height
+                            doc.addPage(); // Add new page
+                            addHeader(doc);
+                            addFooter(doc, pageNumber + 1); // Correctly increment page number
+                            y = margin + 30; // Reset Y position for the new page
+                            pageNumber++;
+
+                        }
+                        doc.text(`- ${item}`, margin, y);
+                    }
+                    return { y: y, pageNumber: pageNumber };
+                }
+
+
+                // Add contents using the function
+                let diagnosesResult = addContentWithPageBreak(pdf, "Diagnostics différentiels possibles:", diagnoses, y, 1);
+                let questionsResult = addContentWithPageBreak(pdf, "Questions supplémentaires pour affiner le diagnostic:", questions, diagnosesResult.y, diagnosesResult.pageNumber);
+                let causesResult = addContentWithPageBreak(pdf, "Causes possibles des symptômes:", causes, questionsResult.y, questionsResult.pageNumber);
+                let recommendationsResult = addContentWithPageBreak(pdf, "Recommandations générales:", recommendations, causesResult.y, causesResult.pageNumber);
+
+
+                // Ajouter un avertissement
+                pdf.setFontSize(10);
+                pdf.setTextColor(100, 100, 100);
+                recommendationsResult.y += 20;
+                if (recommendationsResult.y > pageHeight - margin - 20) {
+                    pdf.addPage();
+                    addHeader(pdf);
+                    addFooter(pdf, recommendationsResult.pageNumber + 1);
+                    recommendationsResult.y = margin + 30;
+                }
+                pdf.text(
+                    "Avertissement: Cette analyse est à titre informatif seulement et ne remplace pas un avis médical professionnel.",
+                    margin,
+                    recommendationsResult.y,
+                    {
+                        maxWidth: 180,
+                    }
+                );
+
+                // Télécharger le PDF
+                pdf.save("rapport_medical.pdf");
+            });
+        });
+    </script>
+</body>
+
+</html>
